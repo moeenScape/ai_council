@@ -11,6 +11,8 @@ import subscriptionRoutes from './routes/subscription.js';
 import promptRoutes from './routes/prompts.js';
 import historyRoutes from './routes/history.js';
 import adminRoutes from './routes/admin.js';
+import paymentRoutes from './routes/payments.js';
+import webhookRoutes from './routes/webhook.js';
 
 export function createApp(): Express {
   const app = express();
@@ -25,6 +27,9 @@ export function createApp(): Express {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   }));
+
+  // Stripe webhook needs raw body - must be before express.json()
+  app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
 
   // Request parsing
   app.use(express.json({ limit: '1mb' }));
@@ -45,6 +50,8 @@ export function createApp(): Express {
   app.use('/api/prompts', authenticate, rateLimit(), promptRoutes);
   app.use('/api/history', authenticate, historyRoutes);
   app.use('/api/admin', authenticate, requireAdmin, adminRoutes);
+  app.use('/api/payments', authenticate, paymentRoutes);
+  app.use('/api/webhook', webhookRoutes);
 
   // 404 handler
   app.use((_req: Request, res: Response) => {

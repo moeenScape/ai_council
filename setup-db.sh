@@ -16,9 +16,9 @@ echo -e "${GREEN}🗄️  AI Comparator Hub - Database Setup${NC}"
 echo ""
 
 # Default configuration
-DB_NAME="${DB_NAME:-ai_comparator}"
-DB_USER="${DB_USER:-postgres}"
-DB_PASSWORD="${DB_PASSWORD:-postgres}"
+DB_NAME="${DB_NAME:-ai_hub}"
+DB_USER="${DB_USER:-ai_hub}"
+DB_PASSWORD="${DB_PASSWORD:-ai_hub_123}"
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 
@@ -49,7 +49,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Options:"
-            echo "  --db-name      Database name (default: ai_comparator)"
+            echo "  --db-name      Database name (default: ai_hub)"
             echo "  --db-user      Database user (default: postgres)"
             echo "  --db-password  Database password (default: postgres)"
             echo "  --db-host      Database host (default: localhost)"

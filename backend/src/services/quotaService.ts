@@ -144,3 +144,15 @@ export async function getSubscriptionDetails(userId: string) {
     usage,
   };
 }
+
+/**
+ * Upgrade user subscription tier
+ */
+export async function upgradeSubscription(userId: string, newTier: SubscriptionTier): Promise<void> {
+  const user = await userRepo.findUserById(userId);
+  if (!user) {
+    throw notFoundError('User not found');
+  }
+  
+  await userRepo.updateUserSubscription(userId, newTier);
+}

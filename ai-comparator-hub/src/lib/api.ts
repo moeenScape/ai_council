@@ -226,6 +226,30 @@ class ApiClient {
     const response = await this.request<{ success: boolean; data: { tier: SubscriptionTier; limits: Record<string, unknown> } }>('/subscription');
     return response.data;
   }
+
+  async upgradeSubscription(tier: 'pro' | 'team'): Promise<{ tier: SubscriptionTier; message: string }> {
+    const response = await this.request<{ success: boolean; data: { tier: SubscriptionTier }; message: string }>('/subscription/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ tier }),
+    });
+    return { tier: response.data.tier, message: response.message };
+  }
+
+  // Payment endpoints
+  async createCheckoutSession(tier: 'pro' | 'team'): Promise<{ sessionId: string; url: string }> {
+    const response = await this.request<{ success: boolean; data: { sessionId: string; url: string } }>('/payments/create-checkout-session', {
+      method: 'POST',
+      body: JSON.stringify({ tier }),
+    });
+    return response.data;
+  }
+
+  async verifyPaymentSession(sessionId: string): Promise<void> {
+    await this.request('/payments/verify-session', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId }),
+    });
+  }
 }
 
 export const api = new ApiClient();

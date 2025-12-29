@@ -7,6 +7,7 @@ export const config = {
   // Server
   port: parseInt(process.env.PORT || '3001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   
   // Database
   databaseUrl: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/ai_comparator',
@@ -53,6 +54,14 @@ export const config = {
   history: {
     defaultLimit: 50,
     maxLimit: 100,
+  },
+  
+  // Stripe
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY || '',
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    proPriceId: process.env.STRIPE_PRO_PRICE_ID || 'price_pro_monthly',
+    teamPriceId: process.env.STRIPE_TEAM_PRICE_ID || 'price_team_monthly',
   },
 };
 
