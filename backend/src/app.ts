@@ -13,6 +13,8 @@ import historyRoutes from './routes/history.js';
 import adminRoutes from './routes/admin.js';
 import paymentRoutes from './routes/payments.js';
 import webhookRoutes from './routes/webhook.js';
+import sessionRoutes from './routes/sessions.js';
+import profileRoutes from './routes/profile.js';
 
 export function createApp(): Express {
   const app = express();
@@ -52,6 +54,8 @@ export function createApp(): Express {
   app.use('/api/admin', authenticate, requireAdmin, adminRoutes);
   app.use('/api/payments', authenticate, paymentRoutes);
   app.use('/api/webhook', webhookRoutes);
+  app.use('/api/sessions', authenticate, rateLimit(), sessionRoutes);
+  app.use('/api/profile', authenticate, profileRoutes);
 
   // 404 handler
   app.use((_req: Request, res: Response) => {

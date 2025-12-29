@@ -10,14 +10,68 @@ export type AIModel = 'gpt' | 'claude' | 'grok';
 // Response Status
 export type ResponseStatus = 'success' | 'error' | 'timeout';
 
+// Theme
+export type Theme = 'light' | 'dark' | 'system';
+
 // User Model
 export interface User {
   id: string;
   email: string;
   passwordHash: string;
+  displayName?: string;
+  avatarUrl?: string;
   subscriptionTier: SubscriptionTier;
+  theme: Theme;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// User Profile (public info)
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName?: string;
+  avatarUrl?: string;
+  subscriptionTier: SubscriptionTier;
+  theme: Theme;
+  createdAt: Date;
+}
+
+// Chat Session
+export interface ChatSession {
+  id: string;
+  userId: string;
+  title: string;
+  lastActivityAt: Date;
+  createdAt: Date;
+}
+
+// Chat Message
+export interface ChatMessage {
+  id: string;
+  sessionId: string;
+  userId: string;
+  content: string;
+  contentType: ContentType;
+  models: AIModel[];
+  createdAt: Date;
+}
+
+// Chat Message with Responses
+export interface ChatMessageWithResponses extends ChatMessage {
+  responses: {
+    model: AIModel;
+    content: string;
+    responseTimeMs: number;
+    status: ResponseStatus;
+    errorMessage?: string;
+  }[];
+}
+
+// Session with Messages
+export interface SessionWithMessages {
+  session: ChatSession;
+  messages: ChatMessageWithResponses[];
 }
 
 // Subscription Plan Configuration

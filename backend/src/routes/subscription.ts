@@ -29,20 +29,21 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  * POST /api/subscription/upgrade
  * Upgrade user subscription (simplified - no payment integration)
  */
-router.post('/upgrade', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/upgrade', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authReq = req as AuthenticatedRequest;
     const userId = authReq.user.sub;
     const { tier } = req.body as { tier: SubscriptionTier };
     
     if (!tier || !['pro', 'team'].includes(tier)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: {
           type: 'VALIDATION_ERROR',
           message: 'Invalid tier. Must be "pro" or "team"',
         },
       });
+      return;
     }
     
     await quotaService.upgradeSubscription(userId, tier);

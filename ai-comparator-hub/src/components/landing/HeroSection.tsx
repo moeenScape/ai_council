@@ -149,7 +149,7 @@ export function HeroSection() {
                   <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
                   <div className="h-3 w-3 rounded-full bg-gpt/60" />
                 </div>
-                <span className="text-xs text-muted-foreground ml-2">AI Comparator</span>
+                <span className="text-xs text-muted-foreground ml-2">AI Council</span>
               </div>
               
               {/* Preview Content */}

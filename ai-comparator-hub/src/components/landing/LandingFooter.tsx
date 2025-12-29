@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 
 export function LandingFooter() {
   return (
@@ -8,8 +7,12 @@ export function LandingFooter() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-semibold">AI Comparator</span>
+            <img 
+              src="/asset/logo_2.jpg" 
+              alt="AI Council" 
+              className="h-6 w-6 object-contain rounded"
+            />
+            <span className="font-semibold">AI Council</span>
           </Link>
 
           {/* Links */}
@@ -21,7 +24,7 @@ export function LandingFooter() {
 
           {/* Copyright */}
           <p className="text-sm text-muted-foreground">
-            © 2024 AI Comparator. All rights reserved.
+            © 2024 AI Council. All rights reserved.
           </p>
         </div>
       </div>

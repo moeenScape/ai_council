@@ -8,11 +8,12 @@ const router = Router();
  * Handle Stripe webhook events
  * Note: This route needs raw body, configured in app.ts
  */
-router.post('/stripe', async (req: Request, res: Response) => {
+router.post('/stripe', async (req: Request, res: Response): Promise<void> => {
   const signature = req.headers['stripe-signature'] as string;
 
   if (!signature) {
-    return res.status(400).json({ error: 'Missing stripe-signature header' });
+    res.status(400).json({ error: 'Missing stripe-signature header' });
+    return;
   }
 
   try {

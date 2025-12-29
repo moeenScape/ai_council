@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, User, Zap, LogOut, Settings, History, Crown } from "lucide-react";
+import { User, Zap, LogOut, Settings, History, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { UpgradeModal } from "./UpgradeModal";
 
@@ -24,8 +25,11 @@ export function AppHeader() {
 
   const handleUpgradeSuccess = async () => {
     await refreshUsage();
-    // Force page reload to get new user data
     window.location.reload();
+  };
+
+  const getInitials = (email: string) => {
+    return email.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -35,12 +39,13 @@ export function AppHeader() {
           <div className="flex h-14 items-center justify-between">
             {/* Logo */}
             <Link to="/app" className="flex items-center gap-2 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/30 blur-lg group-hover:bg-primary/50 transition-all" />
-                <Sparkles className="relative h-6 w-6 text-primary" />
-              </div>
+              <img 
+                src="/asset/logo_2.jpg" 
+                alt="AI Council" 
+                className="h-8 w-8 object-contain rounded"
+              />
               <span className="text-lg font-bold tracking-tight">
-                AI<span className="gradient-text">Comparator</span>
+                AI <span className="gradient-text">Council</span>
               </span>
             </Link>
 
@@ -74,24 +79,33 @@ export function AppHeader() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center">
-                      <User className="h-4 w-4 text-primary-foreground" />
-                    </div>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-purple-500 text-primary-foreground text-sm">
+                        {user?.email ? getInitials(user.email) : <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="flex flex-col items-start cursor-default">
+                  <DropdownMenuItem 
+                    className="flex flex-col items-start cursor-pointer"
+                    onClick={() => navigate("/profile")}
+                  >
                     <span className="font-medium">{user?.email || 'User'}</span>
                     <span className="text-xs text-muted-foreground capitalize">
                       {user?.subscriptionTier || 'free'} plan
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/history")}>
                     <History className="h-4 w-4 mr-2" />
                     History
                   </DropdownMenuItem>

@@ -50,7 +50,7 @@ export async function testRedisConnection(): Promise<boolean> {
 }
 
 export function isRedisAvailable(): boolean {
-  return redisAvailable;
+  return redisAvailable ?? false;
 }
 
 export async function closeRedis(): Promise<void> {

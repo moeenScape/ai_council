@@ -1,11 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function LandingHeader() {
-  const location = useLocation();
-  
   return (
     <motion.header 
       initial={{ y: -20, opacity: 0 }}
@@ -17,12 +14,13 @@ export function LandingHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/30 blur-lg group-hover:bg-primary/50 transition-all" />
-              <Sparkles className="relative h-7 w-7 text-primary" />
-            </div>
+            <img 
+              src="/asset/logo_2.jpg" 
+              alt="AI Council" 
+              className="h-9 w-9 object-contain rounded"
+            />
             <span className="text-lg font-bold tracking-tight">
-              AI<span className="gradient-text">Comparator</span>
+              AI <span className="gradient-text">Council</span>
             </span>
           </Link>
 

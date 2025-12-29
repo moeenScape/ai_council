@@ -250,6 +250,119 @@ class ApiClient {
       body: JSON.stringify({ sessionId }),
     });
   }
+
+  // Profile endpoints
+  async getProfile(): Promise<UserProfile> {
+    const response = await this.request<{ success: boolean; data: UserProfile }>('/profile');
+    return response.data;
+  }
+
+  async updateProfile(updates: { displayName?: string; avatarUrl?: string }): Promise<UserProfile> {
+    const response = await this.request<{ success: boolean; data: UserProfile }>('/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+    return response.data;
+  }
+
+  async updateTheme(theme: Theme): Promise<{ theme: Theme }> {
+    const response = await this.request<{ success: boolean; data: { theme: Theme } }>('/profile/theme', {
+      method: 'PATCH',
+      body: JSON.stringify({ theme }),
+    });
+    return response.data;
+  }
+
+  // Session endpoints
+  async getSessions(page = 1, limit = 50): Promise<{ sessions: ChatSession[]; total: number; hasMore: boolean }> {
+    const response = await this.request<{ success: boolean; data: ChatSession[]; pagination: { total: number; hasMore: boolean } }>(
+      `/sessions?page=${page}&limit=${limit}`
+    );
+    return { sessions: response.data, total: response.pagination.total, hasMore: response.pagination.hasMore };
+  }
+
+  async createSession(title?: string): Promise<ChatSession> {
+    const response = await this.request<{ success: boolean; data: ChatSession }>('/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
+    return response.data;
+  }
+
+  async getSession(id: string): Promise<SessionWithMessages> {
+    const response = await this.request<{ success: boolean; data: SessionWithMessages }>(`/sessions/${id}`);
+    return response.data;
+  }
+
+  async sendMessage(
+    sessionId: string,
+    content: string,
+    contentType: ContentType,
+    models: AIModel[]
+  ): Promise<ChatMessageWithResponses> {
+    const response = await this.request<{ success: boolean; data: ChatMessageWithResponses }>(`/sessions/${sessionId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content, contentType, models }),
+    });
+    return response.data;
+  }
+
+  async updateSessionTitle(sessionId: string, title: string): Promise<ChatSession> {
+    const response = await this.request<{ success: boolean; data: ChatSession }>(`/sessions/${sessionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title }),
+    });
+    return response.data;
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.request(`/sessions/${sessionId}`, { method: 'DELETE' });
+  }
+}
+
+// Additional types
+export type Theme = 'light' | 'dark' | 'system';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName?: string;
+  avatarUrl?: string;
+  subscriptionTier: SubscriptionTier;
+  theme: Theme;
+  createdAt: string;
+}
+
+export interface ChatSession {
+  id: string;
+  userId: string;
+  title: string;
+  lastActivityAt: string;
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  sessionId: string;
+  content: string;
+  contentType: ContentType;
+  models: AIModel[];
+  createdAt: string;
+}
+
+export interface ChatMessageWithResponses extends ChatMessage {
+  responses: {
+    model: AIModel;
+    content: string;
+    responseTimeMs: number;
+    status: ResponseStatus;
+    errorMessage?: string;
+  }[];
+}
+
+export interface SessionWithMessages {
+  session: ChatSession;
+  messages: ChatMessageWithResponses[];
 }
 
 export const api = new ApiClient();

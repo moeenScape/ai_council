@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, ArrowLeft, Eye, EyeOff, Check } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,7 +51,7 @@ export default function SignupPage() {
       await signup(email, password);
       toast({
         title: "Account created!",
-        description: "Welcome to AI Comparator.",
+        description: "Welcome to AI Council.",
       });
       navigate("/app");
     } catch (error) {
@@ -114,8 +114,12 @@ export default function SignupPage() {
 
           {/* Logo */}
           <div className="flex items-center gap-2 mb-8">
-            <Sparkles className="h-7 w-7 text-primary" />
-            <span className="text-xl font-bold">AI Comparator</span>
+            <img 
+              src="/asset/logo_2.jpg" 
+              alt="AI Council" 
+              className="h-8 w-8 object-contain rounded"
+            />
+            <span className="text-xl font-bold">AI Council</span>
           </div>
 
           {/* Header */}
