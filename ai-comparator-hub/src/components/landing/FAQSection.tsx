@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { ChevronDown, HelpCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FAQItem {
@@ -43,20 +43,26 @@ const faqs: FAQItem[] = [
   },
 ];
 
-function FAQItem({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boolean; onToggle: () => void }) {
+function FAQItemCard({ item, isOpen, onToggle, index }: { item: FAQItem; isOpen: boolean; onToggle: () => void; index: number }) {
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-card/50 hover:bg-card/80 transition-colors">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      className="border border-border/50 rounded-2xl overflow-hidden bg-card/30 backdrop-blur-sm hover:bg-card/50 hover:border-primary/30 transition-all duration-300 shadow-lg"
+    >
       <button
         onClick={onToggle}
-        className="w-full px-6 py-5 flex items-center justify-between text-left"
+        className="w-full px-6 py-5 flex items-center justify-between text-left group"
       >
-        <span className="font-medium pr-4">{item.question}</span>
-        <ChevronDown
-          className={cn(
-            "h-5 w-5 text-muted-foreground shrink-0 transition-transform duration-200",
-            isOpen && "rotate-180"
-          )}
-        />
+        <span className="font-medium pr-4 group-hover:text-primary transition-colors">{item.question}</span>
+        <div className={cn(
+          "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
+          isOpen ? "bg-primary text-primary-foreground rotate-180" : "bg-secondary/50 text-muted-foreground"
+        )}>
+          <ChevronDown className="h-4 w-4" />
+        </div>
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -64,15 +70,15 @@ function FAQItem({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boolean; o
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <div className="px-6 pb-5 text-muted-foreground">
+            <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
               {item.answer}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
@@ -84,8 +90,102 @@ export function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-24 bg-secondary/20">
-      <div className="container px-4">
+    <section id="faq" className="py-24 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
+      
+      {/* Animated Gradient Orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute -top-40 -left-40 w-80 h-80 bg-primary/20 rounded-full blur-[100px]"
+        />
+        <motion.div
+          animate={{
+            x: [0, -80, 0],
+            y: [0, 60, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+          className="absolute top-1/2 -right-40 w-96 h-96 bg-purple-500/15 rounded-full blur-[120px]"
+        />
+        <motion.div
+          animate={{
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4,
+          }}
+          className="absolute -bottom-20 left-1/3 w-72 h-72 bg-cyan-500/15 rounded-full blur-[100px]"
+        />
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div 
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
+        }}
+      />
+
+      {/* Floating Decorative Elements */}
+      <motion.div
+        animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-20 left-[10%] hidden lg:block"
+      >
+        <div className="glass-panel p-3 rounded-xl opacity-60">
+          <HelpCircle className="h-5 w-5 text-primary" />
+        </div>
+      </motion.div>
+
+      <motion.div
+        animate={{ y: [0, 12, 0], rotate: [0, -3, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute top-40 right-[15%] hidden lg:block"
+      >
+        <div className="glass-panel p-3 rounded-xl opacity-60">
+          <Sparkles className="h-5 w-5 text-purple-400" />
+        </div>
+      </motion.div>
+
+      <motion.div
+        animate={{ y: [0, -10, 0], rotate: [0, 4, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute bottom-32 left-[20%] hidden lg:block"
+      >
+        <div className="h-3 w-3 rounded-full bg-cyan-400/60" />
+      </motion.div>
+
+      <motion.div
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        className="absolute bottom-40 right-[25%] hidden lg:block"
+      >
+        <div className="h-2 w-2 rounded-full bg-primary/60" />
+      </motion.div>
+
+      <div className="container px-4 relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -94,14 +194,21 @@ export function FAQSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
+          >
             <HelpCircle className="h-4 w-4" />
             FAQ
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Frequently Asked Questions
+          </motion.div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            Frequently Asked{" "}
+            <span className="gradient-text">Questions</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Everything you need to know about AI Council. Can't find what you're looking for? 
             Feel free to contact our support team.
           </p>
@@ -109,22 +216,17 @@ export function FAQSection() {
 
         {/* FAQ Grid */}
         <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <FAQItem
+              <FAQItemCard
                 key={index}
                 item={faq}
+                index={index}
                 isOpen={openIndex === index}
                 onToggle={() => handleToggle(index)}
               />
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* Contact CTA */}
@@ -133,17 +235,20 @@ export function FAQSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-center mt-12"
+          className="text-center mt-16"
         >
-          <p className="text-muted-foreground mb-4">
-            Still have questions?
-          </p>
-          <a
-            href="mailto:support@aicouncil.app"
-            className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
-          >
-            Contact our support team →
-          </a>
+          <div className="glass-panel inline-block px-8 py-6 rounded-2xl">
+            <p className="text-muted-foreground mb-4">
+              Still have questions?
+            </p>
+            <a
+              href="mailto:support@aicouncil.app"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+            >
+              Contact our support team
+              <span>→</span>
+            </a>
+          </div>
         </motion.div>
       </div>
     </section>
