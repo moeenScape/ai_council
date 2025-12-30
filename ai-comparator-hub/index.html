@@ -30,6 +30,25 @@
   </head>
 
   <body>
+    <script>
+      // Prevent flash of wrong theme
+      (function() {
+        const publicPaths = ['/', '/login', '/signup'];
+        const isPublicPage = publicPaths.includes(window.location.pathname);
+        const isAuthenticated = !!localStorage.getItem('accessToken');
+        
+        // Always dark on public pages, otherwise use user preference
+        if (isPublicPage || !isAuthenticated) {
+          document.documentElement.classList.add('dark');
+        } else {
+          const theme = localStorage.getItem('theme') || 'dark';
+          const resolved = theme === 'system' 
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : theme;
+          document.documentElement.classList.add(resolved);
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
