@@ -32,7 +32,47 @@ Compare AI models side by side. Submit any prompt and see responses from GPT, Cl
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
+
+The easiest way to run the entire stack:
+
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd ai-council
+
+# 2. Create environment file
+cp .env.example .env
+
+# 3. Edit .env with your API keys
+nano .env
+
+# 4. Start all services
+docker compose up -d
+
+# 5. View logs (optional)
+docker compose logs -f
+```
+
+The app will be available at:
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:3001
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
+
+To stop:
+```bash
+docker compose down
+```
+
+To stop and remove data:
+```bash
+docker compose down -v
+```
+
+### Option 2: Manual Setup
+
+#### Prerequisites
 
 - Node.js 18+
 - PostgreSQL
@@ -101,7 +141,15 @@ npm run dev --prefix ai-comparator-hub  # Frontend on :5173
 
 ```
 ai-council/
-├── backend/                 # Express API server
+├── docker-compose.yml      # Docker orchestration
+├── .env.example            # Environment template
+├── .dockerignore           # Docker ignore rules
+├── start.sh                # Local dev start script
+├── setup-db.sh             # Database setup script
+├── README.md
+│
+├── backend/                # Express API server
+│   ├── Dockerfile
 │   ├── src/
 │   │   ├── config/         # Configuration
 │   │   ├── db/             # Database connection & schema
@@ -113,6 +161,8 @@ ai-council/
 │   └── tests/              # Test files
 │
 ├── ai-comparator-hub/      # React frontend
+│   ├── Dockerfile
+│   ├── nginx.conf          # Nginx configuration
 │   ├── public/             # Static assets
 │   └── src/
 │       ├── components/     # UI components
@@ -120,10 +170,6 @@ ai-council/
 │       ├── hooks/          # Custom hooks
 │       ├── lib/            # Utilities & API client
 │       └── pages/          # Page components
-│
-├── start.sh                # Start script
-├── setup-db.sh             # Database setup script
-└── README.md
 ```
 
 ## API Endpoints
@@ -143,6 +189,43 @@ ai-council/
 | GET | `/api/usage` | Get usage stats |
 | POST | `/api/subscription/upgrade` | Upgrade plan |
 | POST | `/api/payments/create-checkout-session` | Stripe checkout |
+
+## Docker Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| frontend | 8080 | React app served via Nginx |
+| backend | 3001 | Express API server |
+| postgres | 5432 | PostgreSQL database |
+| redis | 6379 | Redis cache (rate limiting) |
+
+### Docker Commands
+
+```bash
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# View specific service logs
+docker compose logs -f backend
+
+# Rebuild after code changes
+docker compose up -d --build
+
+# Stop services
+docker compose down
+
+# Stop and remove volumes (reset data)
+docker compose down -v
+
+# Access database
+docker compose exec postgres psql -U ai_hub -d ai_hub
+
+# Access Redis CLI
+docker compose exec redis redis-cli
+```
 
 ## License
 
