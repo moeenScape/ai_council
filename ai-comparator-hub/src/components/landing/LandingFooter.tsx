@@ -21,7 +21,7 @@ export function LandingFooter() {
       { label: "Documentation", href: "#" },
       { label: "Help Center", href: "#" },
       { label: "Community", href: "#" },
-      { label: "Status", href: "#" },
+      { label: "GitHub Repository", href: "https://github.com/moeenScape/ai_council" },
     ],
     legal: [
       { label: "Privacy Policy", href: "#" },
@@ -32,9 +32,9 @@ export function LandingFooter() {
 
   const socialLinks = [
     { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Github, href: "#", label: "GitHub" },
+    { icon: Github, href: "https://github.com/moeenScape/ai_council", label: "GitHub" },
     { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Mail, href: "#", label: "Email" },
+    { icon: Mail, href: "mailto:support@aicouncil.app", label: "Email" },
   ];
 
   return (
