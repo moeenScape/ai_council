@@ -245,18 +245,57 @@ export default function ComparatorApp() {
       };
       setMessages(prev => [...prev, optimisticMessage]);
 
-      // Send message
-      const message = await api.sendMessage(
+      let activeMessageId = optimisticMessage.id;
+
+      const updateMessage = (
+        updater: (message: ChatMessageWithResponses) => ChatMessageWithResponses
+      ) => {
+        setMessages(prev => prev.map(m => (
+          m.id === activeMessageId ? updater(m) : m
+        )));
+      };
+
+      const message = await api.streamMessage(
         sessionId,
         currentPrompt,
         contentType,
-        selectedModels as AIModel[]
+        selectedModels as AIModel[],
+        {
+          onMessage: (createdMessage) => {
+            activeMessageId = createdMessage.id;
+            setMessages(prev => prev.map(m => (
+              m.id === optimisticMessage.id
+                ? { ...createdMessage, responses: m.responses }
+                : m
+            )));
+          },
+          onResponse: (response) => {
+            updateMessage((message) => {
+              const existingIndex = message.responses.findIndex(
+                (item) => item.model === response.model
+              );
+              const nextResponses = [...message.responses];
+              if (existingIndex >= 0) {
+                nextResponses[existingIndex] = response;
+              } else {
+                nextResponses.push(response);
+              }
+              return { ...message, responses: nextResponses };
+            });
+          },
+          onDone: (finalMessage) => {
+            setMessages(prev => prev.map(m => (
+              m.id === activeMessageId ? finalMessage : m
+            )));
+          },
+        }
       );
 
-      // Replace optimistic message with real one
-      setMessages(prev => prev.map(m => 
-        m.id === optimisticMessage.id ? message : m
-      ));
+      if (message.id !== activeMessageId) {
+        setMessages(prev => prev.map(m => (
+          m.id === activeMessageId ? message : m
+        )));
+      }
 
       await refreshUsage();
     } catch (error) {
