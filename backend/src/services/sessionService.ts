@@ -111,6 +111,74 @@ export async function sendMessage(
 }
 
 /**
+ * Send a message in a session and stream AI responses as they complete.
+ */
+export async function sendMessageStreaming(
+  sessionId: string,
+  userId: string,
+  content: string,
+  contentType: ContentType,
+  models: AIModel[],
+  onResponse: (response: ChatMessageWithResponses['responses'][number]) => void,
+  onMessage?: (message: ChatMessageWithResponses) => void
+): Promise<ChatMessageWithResponses> {
+  // Verify session ownership
+  const session = await sessionRepo.getSessionById(sessionId);
+  if (!session) {
+    throw notFoundError('Session not found');
+  }
+  if (session.userId !== userId) {
+    throw authorizationError('Not authorized to access this session');
+  }
+
+  // Check and enforce quota
+  const user = await import('../repositories/userRepository.js').then(m => m.findUserById(userId));
+  if (!user) throw notFoundError('User not found');
+
+  await quotaService.enforceQuota(userId);
+  quotaService.validateModelCount(user.subscriptionTier, models);
+
+  // Create the message
+  const message = await sessionRepo.createMessage(
+    sessionId,
+    userId,
+    content,
+    contentType,
+    models
+  );
+
+  onMessage?.({
+    ...message,
+    responses: [],
+  });
+
+  const responses = await Promise.all(models.map(async (model) => {
+    const response = await aiGateway.sendPrompt(model, content, contentType);
+    await sessionRepo.createResponse(
+      message.id,
+      response.model,
+      response.content,
+      response.responseTimeMs,
+      response.status,
+      response.errorMessage
+    );
+    onResponse(response);
+    return response;
+  }));
+
+  // Decrement quota
+  await quotaService.decrementQuota(userId);
+
+  // Auto-generate title if first message
+  await sessionRepo.autoGenerateTitle(sessionId);
+
+  return {
+    ...message,
+    responses,
+  };
+}
+
+/**
  * Update session title
  */
 export async function updateSessionTitle(

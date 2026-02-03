@@ -307,6 +307,115 @@ class ApiClient {
     return response.data;
   }
 
+  async streamMessage(
+    sessionId: string,
+    content: string,
+    contentType: ContentType,
+    models: AIModel[],
+    handlers: {
+      onMessage?: (message: ChatMessageWithResponses) => void;
+      onResponse?: (response: ChatMessageWithResponses['responses'][number]) => void;
+      onDone?: (message: ChatMessageWithResponses) => void;
+      onError?: (error: Error) => void;
+    }
+  ): Promise<ChatMessageWithResponses> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (this.accessToken) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
+    }
+
+    let response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/messages/stream`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ content, contentType, models }),
+    });
+
+    if (response.status === 401 && this.refreshToken) {
+      const refreshed = await this.tryRefreshToken();
+      if (refreshed) {
+        (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
+        response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/messages/stream`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ content, contentType, models }),
+        });
+      } else {
+        this.clearTokens();
+        throw new Error('Session expired. Please log in again.');
+      }
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Request failed');
+    }
+
+    if (!response.body) {
+      throw new Error('Streaming not supported by the browser');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    const parseEvent = (chunk: string) => {
+      const lines = chunk.split('\n');
+      let event = 'message';
+      const dataLines: string[] = [];
+      for (const line of lines) {
+        if (line.startsWith('event:')) {
+          event = line.replace('event:', '').trim();
+        } else if (line.startsWith('data:')) {
+          dataLines.push(line.replace('data:', '').trim());
+        }
+      }
+      const dataString = dataLines.join('\n');
+      if (!dataString) return;
+      const payload = JSON.parse(dataString) as Record<string, unknown>;
+      if (event === 'message' && payload.message) {
+        handlers.onMessage?.(payload.message as ChatMessageWithResponses);
+      } else if (event === 'response' && payload.response) {
+        handlers.onResponse?.(payload.response as ChatMessageWithResponses['responses'][number]);
+      } else if (event === 'done' && payload.message) {
+        const message = payload.message as ChatMessageWithResponses;
+        handlers.onDone?.(message);
+        return message;
+      } else if (event === 'error') {
+        const err = new Error((payload.message as string) || 'Stream error');
+        handlers.onError?.(err);
+        throw err;
+      }
+      return null;
+    };
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let boundaryIndex = buffer.indexOf('\n\n');
+          while (boundaryIndex !== -1) {
+            const chunk = buffer.slice(0, boundaryIndex);
+            buffer = buffer.slice(boundaryIndex + 2);
+            const doneMessage = parseEvent(chunk);
+            if (doneMessage) {
+              resolve(doneMessage);
+              return;
+            }
+            boundaryIndex = buffer.indexOf('\n\n');
+          }
+        }
+        reject(new Error('Stream closed unexpectedly'));
+      } catch (error) {
+        reject(error as Error);
+      }
+    });
+  }
+
   async updateSessionTitle(sessionId: string, title: string): Promise<ChatSession> {
     const response = await this.request<{ success: boolean; data: ChatSession }>(`/sessions/${sessionId}`, {
       method: 'PATCH',

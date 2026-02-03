@@ -108,6 +108,64 @@ router.post('/:id/messages', async (req: Request, res: Response, next: NextFunct
 });
 
 /**
+ * POST /api/sessions/:id/messages/stream
+ * Stream AI responses as Server-Sent Events (SSE)
+ */
+router.post('/:id/messages/stream', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user.sub;
+    const { id } = req.params;
+    const { content, contentType, models } = req.body as {
+      content: string;
+      contentType: ContentType;
+      models: AIModel[];
+    };
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    let closed = false;
+    req.on('close', () => {
+      closed = true;
+    });
+
+    const writeEvent = (event: string, data: unknown) => {
+      if (closed) return;
+      res.write(`event: ${event}\n`);
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    const message = await sessionService.sendMessageStreaming(
+      id,
+      userId,
+      content,
+      contentType,
+      models,
+      (response) => {
+        writeEvent('response', { response });
+      },
+      (createdMessage) => {
+        writeEvent('message', { message: createdMessage });
+      }
+    );
+
+    writeEvent('done', { message });
+    res.end();
+  } catch (error) {
+    if (res.headersSent) {
+      res.write(`event: error\n`);
+      res.write(`data: ${JSON.stringify({ message: (error as Error).message })}\n\n`);
+      res.end();
+      return;
+    }
+    next(error);
+  }
+});
+
+/**
  * PATCH /api/sessions/:id
  * Update session title
  */
